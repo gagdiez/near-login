@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1> Backend Sign-in Example </h1>
+
+<div class="row">
+  <div class="col-5">
+  
+    <h4> Signing the Message </h4>
+    <p>
+      We ask the wallet to sign a message (see <i class="message">./public/js/index.js</i>).
+      If the user accepts, the wallet returns the signed message alongside:
+      <ul>
+        <li>The account used to sign</li>
+        <li>The public part of the <a href="https://docs.near.org/concepts/basics/accounts/access-keys">key</a> used to sign</li>
+        <li>The block-id in which the message was signed</li>
+      </ul>
+    </p>
+
+  </div>
+  <div class="col-5">
+    <h4> Authenticating the User </h4>
+    <p>
+      The signed message is sent to our express backend (see <i class="messages">./routes/user.js</i>), which then verifies that:
+    </p>
+    
+    <ol>
+      <li>The public key can decipher the message </li>
+      <li>The public key belongs to the account</li>
+      <li>The message was signed recently</li>
+    </ol>
+
+  </div>
+
+</div>
+
+<hr />
+
+{% if not user %}
+<p class="text-center">
+  You are not logged in. The backend won't allow you to access the <a href="/secret">secret page</a> until you  
+  <button class="btn btn-primary" id="login-btn"> Login using NEAR </button>
+</p>
+{% else %}
+  Hi {{user}}, you can now check <a href="/secret">the secret</a> - 
+  <button class="btn btn-primary" id="logout-btn"> Logout </button>
+{% endif %}
+
+<br>
+
+{% endblock content %}
