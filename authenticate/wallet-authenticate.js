@@ -11,7 +11,6 @@ async function authenticate({ accountId, message, blockId, publicKey, signature 
   const full_key_of_user = await verifyFullKeyBelongsToUser({ accountId, publicKey })
   const valid_signature = verifySignature({ accountId, message, blockId, publicKey, signature })
   const block_is_one_min_old = await verifyBlockIsOneMinOld({ blockId })
-
   return correct_message && block_is_one_min_old && valid_signature && full_key_of_user
 }
 
@@ -80,4 +79,4 @@ async function fetch_block_timestamp({ blockId }) {
   ).then(data => data.json()).then(result => result.result.header.timestamp / 10**6)
 }
 
-module.exports = { authenticate };
+module.exports = { authenticate, verifyBlockIsOneMinOld, verifyExpectedMessage, verifyFullKeyBelongsToUser, verifySignature };

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./app.js",
-    "test": "make test"
+    "test": "cd tests && npm run test"
   },
   "repository": {
     "type": "git",
@@ -20,8 +20,8 @@
     "express-autosanitizer": "^1.0.2",
     "express-session": "^1.17.3",
     "mocha": "~10.1.0",
+    "near-api-js": "^1.1.0",
     "nunjucks": "^3.2.3",
-    "near-api-js":"^1.1.0",
     "passport": "^0.6.0",
     "passport-custom": "^1.1.1",
     "should": "~13.2.3"
