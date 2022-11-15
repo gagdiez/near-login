@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./app.js",
+    "postinstall": "cd tests && npm install",
     "test": "cd tests && npm run test"
   },
   "repository": {
