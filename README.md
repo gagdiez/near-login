@@ -1,7 +1,3 @@
-## Minimal Express Authentication With NEAR
+# NEAR Login
 
-A minimal example showing how to set up a server that authenticates users through their NEAR wallet.
-
-### Quickstart
-
-Simply run `npm install` and `npm start`
+Authenticate users in the backend by signing a message with their wallet 
