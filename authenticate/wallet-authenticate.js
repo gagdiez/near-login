@@ -1,17 +1,22 @@
 const naj = require('near-api-js')
 const js_sha256 = require("js-sha256")
-const borsh = require("borsh")
 
 async function authenticate({ accountId, message, blockId, publicKey, signature }) {
   // A user is correctly authenticated if:
+  // - The user signed the message we expected
+  // - The key used to sign belongs to the user and is a Full Access Key
   // - It was made less than a minute ago
   // - It signed the correct message
-  // - The key used to sign belongs to the user and is a Full Access Key
-  const block_is_one_min_old = await verifyBlockIsOneMinOld({ blockId })
-  const valid_signature = verifySignature({ accountId, message, blockId, publicKey, signature })
+  const correct_message = verifyExpectedMessage({message})
   const full_key_of_user = await verifyFullKeyBelongsToUser({ accountId, publicKey })
+  const valid_signature = verifySignature({ accountId, message, blockId, publicKey, signature })
+  const block_is_one_min_old = await verifyBlockIsOneMinOld({ blockId })
 
-  return block_is_one_min_old && valid_signature && full_key_of_user
+  return correct_message && block_is_one_min_old && valid_signature && full_key_of_user
+}
+
+function verifyExpectedMessage({message}){
+  return message == "myapp.com" // Change it to match your app's domain
 }
 
 async function verifyBlockIsOneMinOld({blockId}){
@@ -21,26 +26,19 @@ async function verifyBlockIsOneMinOld({blockId}){
 }
 
 function verifySignature({ message, publicKey, blockId, accountId, signature }) {
-  // Reconstruct PublicKey from the parameters given in the URL
-  const data = Buffer.from(publicKey, 'base64')
-  const myPK = new naj.utils.PublicKey({ data, keyType: 0 })
-
-  // Reconstruct the message that was **actually signed**
-  let msg = JSON.stringify({ accountId, message, blockId, publicKey, keyType: 0 })
-  const hashed_message = Uint8Array.from(js_sha256.sha256.array(msg))
+  // Reconstruct the payload that was **actually signed**
+  let msg = JSON.stringify({ accountId, message, blockId, publicKey })
+  const reconstructed_payload = Uint8Array.from(js_sha256.sha256.array(msg))
 
   // Reconstruct the signature from the parameter given in the URL
   let real_signature = Buffer.from(signature, 'base64')
 
   // Use the public Key to verify that the private-counterpart signed the message
-  return myPK.verify(hashed_message, real_signature)
+  const myPK = naj.utils.PublicKey.from(publicKey)
+  return myPK.verify(reconstructed_payload, real_signature)
 }
 
 async function verifyFullKeyBelongsToUser({ publicKey, accountId }) {
-  // Reconstruct Public Key from the URL
-  const pkData = Buffer.from(publicKey, 'base64')
-  const userPK = 'ed25519:' + borsh.baseEncode(pkData)
-
   // Call the public RPC asking for all the users' keys
   let data = await fetch_all_user_keys({ accountId })
 
@@ -49,7 +47,7 @@ async function verifyFullKeyBelongsToUser({ publicKey, accountId }) {
 
   // check all the keys to see if we find the used_key there
   for (const k in data.result.keys) {
-    if (data.result.keys[k].public_key === userPK) {
+    if (data.result.keys[k].public_key === publicKey) {
       // Ensure the key is full access, meaning the user had to sign
       // the transaction through the wallet
       return data.result.keys[k].access_key.permission == "FullAccess"
