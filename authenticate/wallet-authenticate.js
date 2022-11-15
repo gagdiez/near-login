@@ -7,19 +7,19 @@ async function authenticate({ accountId, message, blockId, publicKey, signature 
   // - The key used to sign belongs to the user and is a Full Access Key
   // - It was made less than a minute ago
   // - It signed the correct message
-  const correct_message = verifyExpectedMessage({message})
+  const correct_message = verifyExpectedMessage({ message })
   const full_key_of_user = await verifyFullKeyBelongsToUser({ accountId, publicKey })
   const valid_signature = verifySignature({ accountId, message, blockId, publicKey, signature })
   const block_is_one_min_old = await verifyBlockIsOneMinOld({ blockId })
   return correct_message && block_is_one_min_old && valid_signature && full_key_of_user
 }
 
-function verifyExpectedMessage({message}){
+function verifyExpectedMessage({ message }) {
   return message == "myapp.com" // Change it to match your app's domain
 }
 
-async function verifyBlockIsOneMinOld({blockId}){
-  const block_timestamp = await fetch_block_timestamp({blockId})
+async function verifyBlockIsOneMinOld({ blockId }) {
+  const block_timestamp = await fetch_block_timestamp({ blockId })
   const ONE_MINUTE = 60000
   return Date.now() - block_timestamp < ONE_MINUTE
 }
@@ -52,7 +52,7 @@ async function verifyFullKeyBelongsToUser({ publicKey, accountId }) {
       return data.result.keys[k].access_key.permission == "FullAccess"
     }
   }
-  
+
   return false // didn't find it
 }
 
@@ -76,7 +76,7 @@ async function fetch_block_timestamp({ blockId }) {
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: `{"jsonrpc":"2.0", "method": "block", "params":{"block_id": "${blockId}"}, "id":1}`
     }
-  ).then(data => data.json()).then(result => result.result.header.timestamp / 10**6)
+  ).then(data => data.json()).then(result => result.result.header.timestamp / 10 ** 6)
 }
 
 module.exports = { authenticate, verifyBlockIsOneMinOld, verifyExpectedMessage, verifyFullKeyBelongsToUser, verifySignature };
