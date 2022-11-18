@@ -2,20 +2,20 @@ const naj = require('near-api-js')
 const js_sha256 = require("js-sha256")
 
 const APP = "myapp.com"
-const CHALLENGE = "hi"
+const CHALLENGE = Uint8Array.from(Array(32).keys())
 
 async function authenticate({ accountId, publicKey, signature }) {
   // A user is correctly authenticated if:
   // - The key used to sign belongs to the user and is a Full Access Key
   // - The object signed contains the right message and domain
   const full_key_of_user = await verifyFullKeyBelongsToUser({ accountId, publicKey })
-  const valid_signature = verifySignature({ accountId, publicKey, signature })
+  const valid_signature = verifySignature({ publicKey, signature })
   return valid_signature && full_key_of_user
 }
 
-function verifySignature({ publicKey, accountId, signature }) {
+function verifySignature({ publicKey, signature }) {
   // Reconstruct the payload that was **actually signed**
-  let msg = JSON.stringify({ accountId, domain: APP, message: CHALLENGE, publicKey })
+  let msg = JSON.stringify({ domain: APP, nonce: CHALLENGE, publicKey })
   const reconstructed_payload = Uint8Array.from(js_sha256.sha256.array(msg))
 
   // Reconstruct the signature from the parameter given in the URL

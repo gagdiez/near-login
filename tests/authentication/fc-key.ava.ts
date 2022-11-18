@@ -4,18 +4,18 @@ const js_sha256 = require("js-sha256")
 import { authenticate, verifyFullKeyBelongsToUser, verifySignature } from '../../authenticate/wallet-authenticate';
 
 const test = anyTest as TestFn<{}>;
-
+const NONCE = Uint8Array.from(Array(32).keys())
 
 test('returns false with function call key', async (t) => {
-  const { accountId, publicKey, signature } = await signMessage({ domain: "myapp.com", message: "hi" })
+  const { accountId, publicKey, signature } = await signMessage({ domain: "myapp.com", nonce: NONCE })
   const authenticated = await authenticate({ accountId, publicKey, signature })
 
   t.false(await verifyFullKeyBelongsToUser({publicKey, accountId}))
-  t.true(await verifySignature({publicKey, accountId, signature}))
+  t.true(await verifySignature({publicKey, signature}))
   t.false(authenticated)
 });
 
-async function signMessage({ domain, message }: { domain: string, message: string }): Promise<AuthenticationToken> {
+async function signMessage({ domain, nonce }: { domain: string, nonce: Uint8Array }): Promise<AuthenticationToken> {
   // sign a message using a function call key for the user
   const accountId = "dev-1659223306990-29456453680390"
   const privateKey = "ed25519:3zsuvDCiwT11GKV99K72ozYoda1WSDEZ8cS227UohZCrBCR1Q6FiENsytAqUpUHxmvUPjRovg24mVM2puWn8Js76"
@@ -24,7 +24,7 @@ async function signMessage({ domain, message }: { domain: string, message: strin
   const Key = naj.utils.KeyPair.fromString(privateKey)
 
   // Create the payload and sign it
-  const payload: Payload = { accountId, domain, message, publicKey }
+  const payload: Payload = { domain, nonce, publicKey }
   const strPayload = JSON.stringify(payload)
   const hashedPayload = js_sha256.sha256.array(strPayload)
   const { signature } = Key.sign(Uint8Array.from(hashedPayload))
@@ -40,8 +40,7 @@ class AuthenticationToken {
 }
 
 class Payload {
-  accountId: string; // Mandatory: the account name as plain text (e.g. "alice.near")
   domain: string; // The app domain's
-  message: string; // The same message passed in `VerifyOwnerParams.message` 
+  nonce: Uint8Array; // The same message passed in `VerifyOwnerParams.message` 
   publicKey: string; // public counterpart of the key used to sign, encoded as a string with format "<key-type>:<base-64-key-bytes>"
 }
