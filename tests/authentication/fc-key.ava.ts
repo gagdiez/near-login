@@ -18,7 +18,7 @@ test('returns false with function call key', async (t) => {
   wallet.privateKey = "ed25519:3zsuvDCiwT11GKV99K72ozYoda1WSDEZ8cS227UohZCrBCR1Q6FiENsytAqUpUHxmvUPjRovg24mVM2puWn8Js76"
   wallet.publicKey = "ed25519:BfsC1Mznbp8JmHTEV4cCHU2GZWj5ZaMkEphV3C1Bpfpk"
 
-  const { accountId, publicKey, signature } = await wallet.verifyOwner({ domain: "myapp.com", nonce: NONCE })
+  const { accountId, publicKey, signature } = await wallet.signMessage({ message: "hi", receiver: "myapp.com", nonce: NONCE })
   const authenticated = await authenticate({ accountId, publicKey, signature })
 
   t.false(await verifyFullKeyBelongsToUser({ publicKey, accountId }))

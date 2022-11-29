@@ -15,7 +15,7 @@ const NONCE = Uint8Array.from(Array(32).keys())
 
 test('authenticates user', async (t) => {
   const wallet = new Wallet()
-  const { accountId, publicKey, signature } = await wallet.verifyOwner({ domain: "myapp.com", nonce: NONCE })
+  const { accountId, publicKey, signature } = await wallet.signMessage({ message: "hi", receiver: "myapp.com", nonce: NONCE })
 
   const authenticated = await authenticate({ accountId, publicKey, signature })
 
@@ -26,15 +26,16 @@ test('authenticates user', async (t) => {
 
 // Define a Wallet that implements NEP413
 
-export class AuthenticationToken {
+export class SignedMessage {
   accountId: string; // The account name as plain text (e.g. "alice.near")
   publicKey: string; // The public counterpart of the key used to sign, expressed as a string with format "<key-type>:<base-64-key-bytes>"
   signature: string; // The base64 representation of the signature.
 }
 
 export class Payload {
-  domain: string; // The domain in which the user wants to authenticate
-  nonce: Uint8Array; // The same message passed in `VerifyOwnerParams.message` 
+  message: string; // The same message passed in `SignedMessage.message`
+  receiver: string; // The same message passed in `SignedMessage.receiver`
+  nonce: Uint8Array; // The same nonce passed in `SignedMessage.message` 
 }
 
 export class Wallet {
@@ -44,11 +45,11 @@ export class Wallet {
   publicKey = "ed25519:DPzNzTL3jnPzhJ68HFNvEYN8qjD1WcLiXgoCF1iTRQbB"
 
   // implementation following NEP413
-  async verifyOwner({ domain, nonce }: { domain: string, nonce: Uint8Array }): Promise<AuthenticationToken> {
+  async signMessage({ message, receiver, nonce }: { message: string, receiver: string, nonce: Uint8Array }): Promise<SignedMessage> {
     const Key = KeyPair.fromString(this.privateKey)
 
     // Create the payload and sign it
-    const payload: Payload = { domain, nonce }
+    const payload: Payload = { message, receiver, nonce }
     const hashedPayload = js_sha256.sha256.array(`NEP0413:` + JSON.stringify(payload))
     const { signature } = Key.sign(Uint8Array.from(hashedPayload))
     const encoded: string = Buffer.from(signature).toString('base64')
