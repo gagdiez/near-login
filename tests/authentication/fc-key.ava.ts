@@ -1,11 +1,8 @@
 import anyTest, { TestFn } from 'ava';
-const naj = require('near-api-js')
-const js_sha256 = require("js-sha256")
 import { authenticate, verifyFullKeyBelongsToUser, verifySignature } from '../../authenticate/wallet-authenticate';
-import { Wallet } from './auth.ava'
+import { Wallet, NONCE } from './auth.ava'
 
 const test = anyTest as TestFn<{}>;
-const NONCE = Uint8Array.from(Array(32).keys())
 
 // The following tests use an account with the following properties:
 // accountId: dev-1659223306990-29456453680390

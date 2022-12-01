@@ -3,7 +3,7 @@ const js_sha256 = require("js-sha256")
 
 const MESSAGE = "hi"
 const APP = "myapp.com"
-const CHALLENGE = Uint8Array.from(Array(32).keys())
+const CHALLENGE = Array.from(Array(32).keys())
 
 async function authenticate({ accountId, publicKey, signature }) {
   // A user is correctly authenticated if:

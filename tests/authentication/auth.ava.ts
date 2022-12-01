@@ -11,7 +11,7 @@ const test = anyTest as TestFn<{}>;
 // full-access key2: ed25519:B2FAeEg5rcseC62uD9S9TYaiZWNQXK2x7WMwPnZ7Yhye
 // function-call key: ed25519:BfsC1Mznbp8JmHTEV4cCHU2GZWj5ZaMkEphV3C1Bpfpk
 
-const NONCE = Uint8Array.from(Array(32).keys())
+export const NONCE: number[] = Array.from(Array(32).keys())
 
 test('authenticates user', async (t) => {
   const wallet = new Wallet()
@@ -35,7 +35,7 @@ export class SignedMessage {
 export class Payload {
   message: string; // The same message passed in `SignedMessage.message`
   receiver: string; // The same message passed in `SignedMessage.receiver`
-  nonce: Uint8Array; // The same nonce passed in `SignedMessage.message` 
+  nonce: number[]; // The same nonce passed in `SignedMessage.message` 
 }
 
 export class Wallet {
@@ -45,7 +45,7 @@ export class Wallet {
   publicKey = "ed25519:DPzNzTL3jnPzhJ68HFNvEYN8qjD1WcLiXgoCF1iTRQbB"
 
   // implementation following NEP413
-  async signMessage({ message, receiver, nonce }: { message: string, receiver: string, nonce: Uint8Array }): Promise<SignedMessage> {
+  async signMessage({ message, receiver, nonce }: { message: string, receiver: string, nonce: number[] }): Promise<SignedMessage> {
     const Key = KeyPair.fromString(this.privateKey)
 
     // Create the payload and sign it
