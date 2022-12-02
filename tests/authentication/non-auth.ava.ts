@@ -22,7 +22,7 @@ test('if the domain is wrong it returns false', async (t) => {
 
 test('if the nonce is wrong it returns false', async (t) => {
   const wallet = new Wallet()
-  const { accountId, publicKey, signature } = await wallet.signMessage({ message: "hi", receiver: "myapp.com", nonce: [0] })
+  const { accountId, publicKey, signature } = await wallet.signMessage({ message: "hi", receiver: "myapp.com", nonce: Buffer.from(Array(32)) })
   const authenticated = await authenticate({ accountId, publicKey, signature })
 
   t.true(await verifyFullKeyBelongsToUser({ publicKey, accountId }))

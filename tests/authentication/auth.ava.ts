@@ -11,7 +11,7 @@ const test = anyTest as TestFn<{}>;
 // full-access key2: ed25519:B2FAeEg5rcseC62uD9S9TYaiZWNQXK2x7WMwPnZ7Yhye
 // function-call key: ed25519:BfsC1Mznbp8JmHTEV4cCHU2GZWj5ZaMkEphV3C1Bpfpk
 
-export const NONCE: number[] = Array.from(Array(32).keys())
+export const NONCE: Buffer = Buffer.from(Array.from(Array(32).keys()))
 
 test('authenticates user', async (t) => {
   const wallet = new Wallet()
@@ -45,11 +45,14 @@ export class Wallet {
   publicKey = "ed25519:DPzNzTL3jnPzhJ68HFNvEYN8qjD1WcLiXgoCF1iTRQbB"
 
   // implementation following NEP413
-  async signMessage({ message, receiver, nonce }: { message: string, receiver: string, nonce: number[] }): Promise<SignedMessage> {
+  async signMessage({ message, receiver, nonce }: { message: string, receiver: string, nonce: Buffer }): Promise<SignedMessage> {
     const Key = KeyPair.fromString(this.privateKey)
 
+    // Check the nonce is a 32bytes array
+    if(nonce.byteLength != 32){ throw Error("Expected nonce to be a 32 bytes buffer")}
+
     // Create the payload and sign it
-    const payload: Payload = { message, receiver, nonce }
+    const payload: Payload = { message, receiver, nonce: Array.from(nonce) }
     const hashedPayload = js_sha256.sha256.array(`NEP0413:` + JSON.stringify(payload))
     const { signature } = Key.sign(Uint8Array.from(hashedPayload))
     const encoded: string = Buffer.from(signature).toString('base64')
