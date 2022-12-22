@@ -16,7 +16,7 @@ async function authenticate({ accountId, publicKey, signature }) {
 
 function verifySignature({ publicKey, signature }) {
   // Reconstruct the payload that was **actually signed**
-  let msg = `NEP0413:` + JSON.stringify({ message: MESSAGE, receiver: APP, nonce: Array.from(CHALLENGE) })
+  let msg = `NEP0413:` + JSON.stringify({ message: MESSAGE, nonce: Array.from(CHALLENGE), receiver: APP })
   const reconstructed_payload = Uint8Array.from(js_sha256.sha256.array(msg))
 
   // Reconstruct the signature from the parameter given in the URL

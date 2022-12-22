@@ -34,8 +34,8 @@ export class SignedMessage {
 
 export class Payload {
   message: string; // The same message passed in `SignedMessage.message`
-  receiver: string; // The same message passed in `SignedMessage.receiver`
   nonce: number[]; // The same nonce passed in `SignedMessage.message` 
+  receiver: string; // The same message passed in `SignedMessage.receiver`
 }
 
 export class Wallet {
@@ -52,7 +52,7 @@ export class Wallet {
     if(nonce.byteLength != 32){ throw Error("Expected nonce to be a 32 bytes buffer")}
 
     // Create the payload and sign it
-    const payload: Payload = { message, receiver, nonce: Array.from(nonce) }
+    const payload: Payload = { message, nonce: Array.from(nonce), receiver }
     const hashedPayload = js_sha256.sha256.array(`NEP0413:` + JSON.stringify(payload))
     const { signature } = Key.sign(Uint8Array.from(hashedPayload))
     const encoded: string = Buffer.from(signature).toString('base64')
