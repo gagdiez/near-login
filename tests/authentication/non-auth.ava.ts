@@ -1,6 +1,7 @@
 import anyTest, { TestFn } from 'ava';
 import { authenticate, verifyFullKeyBelongsToUser, verifySignature } from '../../authenticate/wallet-authenticate';
-import { Wallet, NONCE } from './auth.ava'
+import { Wallet } from './wallet';
+import { MESSAGE, APP, CHALLENGE, cURL } from './const';
 
 const test = anyTest as TestFn<{}>;
 
@@ -11,8 +12,8 @@ const test = anyTest as TestFn<{}>;
 // function-call key: ed25519:BfsC1Mznbp8JmHTEV4cCHU2GZWj5ZaMkEphV3C1Bpfpk
 
 test('if the domain is wrong it returns false', async (t) => {
-  const wallet = new Wallet()
-  const { accountId, publicKey, signature } = await wallet.signMessage({ message: "hi", receiver: "myappo.com", nonce: NONCE })
+  const wallet = new Wallet({keyToUse: 'full-access'})
+  const { accountId, publicKey, signature } = await wallet.signMessage({ message: MESSAGE, recipient: "myappo.com", nonce: CHALLENGE, callbackUrl: cURL })
   const authenticated = await authenticate({ accountId, publicKey, signature })
 
   t.true(await verifyFullKeyBelongsToUser({ publicKey, accountId }))
@@ -21,8 +22,8 @@ test('if the domain is wrong it returns false', async (t) => {
 });
 
 test('if the nonce is wrong it returns false', async (t) => {
-  const wallet = new Wallet()
-  const { accountId, publicKey, signature } = await wallet.signMessage({ message: "hi", receiver: "myapp.com", nonce: Buffer.from(Array(32)) })
+  const wallet = new Wallet({keyToUse: 'full-access'})
+  const { accountId, publicKey, signature } = await wallet.signMessage({ message: MESSAGE, recipient: APP, nonce: Buffer.from(Array(32)), callbackUrl: cURL })
   const authenticated = await authenticate({ accountId, publicKey, signature })
 
   t.true(await verifyFullKeyBelongsToUser({ publicKey, accountId }))
@@ -31,8 +32,8 @@ test('if the nonce is wrong it returns false', async (t) => {
 });
 
 test('if the accountId is different it returns false', async (t) => {
-  const wallet = new Wallet()
-  const { publicKey, signature } = await wallet.signMessage({ message: "hi", receiver: "myapp.com", nonce: NONCE })
+  const wallet = new Wallet({ keyToUse: "full-access" })
+  const { publicKey, signature } = await wallet.signMessage({ message: MESSAGE, recipient: APP, nonce: CHALLENGE, callbackUrl: cURL })
   const accountId = "dev-1659223306990-29456453680391"
   const authenticated = await authenticate({ accountId, publicKey, signature })
 
@@ -42,8 +43,28 @@ test('if the accountId is different it returns false', async (t) => {
 });
 
 test('if the message is wrong it returns false', async (t) => {
-  const wallet = new Wallet()
-  const { accountId, publicKey, signature } = await wallet.signMessage({ message: "bye", receiver: "myapp.com", nonce: NONCE })
+  const wallet = new Wallet({keyToUse: 'full-access'})
+  const { accountId, publicKey, signature } = await wallet.signMessage({ message: "MESSAGE", recipient: APP, nonce: CHALLENGE })
+  const authenticated = await authenticate({ accountId, publicKey, signature })
+
+  t.true(await verifyFullKeyBelongsToUser({ publicKey, accountId }))
+  t.false(await verifySignature({ publicKey, signature }))
+  t.false(authenticated)
+});
+
+test('if the callbackUrl is wrong it returns false', async (t) => {
+  const wallet = new Wallet({ keyToUse: "full-access" })
+  const { accountId, publicKey, signature } = await wallet.signMessage({ message: MESSAGE, recipient: APP, nonce: CHALLENGE, callbackUrl: "cURL" })
+  const authenticated = await authenticate({ accountId, publicKey, signature })
+
+  t.true(await verifyFullKeyBelongsToUser({ publicKey, accountId }))
+  t.false(await verifySignature({ publicKey, signature }))
+  t.false(authenticated)
+});
+
+test('if the callbackUrl is missing it returns false', async (t) => {
+  const wallet = new Wallet({ keyToUse: "full-access" })
+  const { accountId, publicKey, signature } = await wallet.signMessage({ message: MESSAGE, recipient: APP, nonce: CHALLENGE })
   const authenticated = await authenticate({ accountId, publicKey, signature })
 
   t.true(await verifyFullKeyBelongsToUser({ publicKey, accountId }))

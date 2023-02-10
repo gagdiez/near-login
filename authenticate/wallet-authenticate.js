@@ -1,11 +1,11 @@
+import { MESSAGE, CHALLENGE, APP, cURL } from './config';
+import { Payload, payloadSchema } from './payload';
+import * as borsh from 'borsh'
+
 const naj = require('near-api-js')
 const js_sha256 = require("js-sha256")
 
-const MESSAGE = "hi"
-const APP = "myapp.com"
-const CHALLENGE = Buffer.from(Array.from(Array(32).keys()))
-
-async function authenticate({ accountId, publicKey, signature }) {
+export async function authenticate({ accountId, publicKey, signature }) {
   // A user is correctly authenticated if:
   // - The key used to sign belongs to the user and is a Full Access Key
   // - The object signed contains the right message and domain
@@ -14,20 +14,21 @@ async function authenticate({ accountId, publicKey, signature }) {
   return valid_signature && full_key_of_user
 }
 
-function verifySignature({ publicKey, signature }) {
+export function verifySignature({ publicKey, signature }) {
   // Reconstruct the payload that was **actually signed**
-  let msg = `NEP0413:` + JSON.stringify({ message: MESSAGE, nonce: Array.from(CHALLENGE), receiver: APP })
-  const reconstructed_payload = Uint8Array.from(js_sha256.sha256.array(msg))
+  const payload = new Payload({ message: MESSAGE, nonce: CHALLENGE, recipient: APP, callbackUrl: cURL });
+  const borsh_payload = borsh.serialize(payloadSchema, payload);
+  const to_sign = Uint8Array.from(js_sha256.sha256.array(borsh_payload))
 
   // Reconstruct the signature from the parameter given in the URL
   let real_signature = Buffer.from(signature, 'base64')
 
   // Use the public Key to verify that the private-counterpart signed the message
   const myPK = naj.utils.PublicKey.from(publicKey)
-  return myPK.verify(reconstructed_payload, real_signature)
+  return myPK.verify(to_sign, real_signature)
 }
 
-async function verifyFullKeyBelongsToUser({ publicKey, accountId }) {
+export async function verifyFullKeyBelongsToUser({ publicKey, accountId }) {
   // Call the public RPC asking for all the users' keys
   let data = await fetch_all_user_keys({ accountId })
 
