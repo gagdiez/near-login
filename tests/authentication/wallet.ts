@@ -14,7 +14,7 @@ class SignMessageParams {
 
 class Payload {
   @field({ type: 'u32' })
-  prefix: number; // Always the same prefix: 2**31 + 413
+  tag: number; // Always the same tag: 2**31 + 413
 
   @field({ type: 'string' })
   message: string; // The same message passed in `SignMessageParams.message`
@@ -29,7 +29,7 @@ class Payload {
   callbackUrl?: string;
 
   constructor({ message, nonce, recipient, callbackUrl }: Payload) {
-    this.prefix = 2147484061;
+    this.tag = 2147484061;
     Object.assign(this, { message, nonce, recipient, callbackUrl })
   }
 }
@@ -65,7 +65,7 @@ export class Wallet {
     if (nonce.byteLength != 32) { throw Error("Expected nonce to be a 32 bytes buffer") }
 
     // Create the payload and sign it
-    const payload = new Payload({ prefix: 2147484061, message, nonce: Array.from(nonce), recipient, callbackUrl });
+    const payload = new Payload({ tag: 2147484061, message, nonce: Array.from(nonce), recipient, callbackUrl });
     const borshPayload = Borsh.serialize(payload);
     const hashedPayload = js_sha256.sha256.array(borshPayload)
     const { signature } = Key.sign(Uint8Array.from(hashedPayload))
