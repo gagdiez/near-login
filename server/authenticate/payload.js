@@ -1,4 +1,4 @@
-export class Payload {
+class Payload {
     constructor({ message, nonce, recipient, callbackUrl }) {
         this.tag = 2147484061;
         this.message = message;
@@ -8,4 +8,6 @@ export class Payload {
     }
 }
 
-export const payloadSchema = new Map([[Payload, { kind: 'struct', fields: [['tag', 'u32'], ['message', 'string'], ['nonce', [32]], ['recipient', 'string'], ['callbackUrl', { kind: 'option', type: 'string' }]] }]]);
+const payloadSchema = { struct: { tag: 'u32', message: 'string', nonce: { array: { type: 'u8', len: 32 } }, recipient: 'string', callbackUrl: { option: 'string' } } }
+
+module.exports = { Payload, payloadSchema }

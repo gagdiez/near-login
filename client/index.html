@@ -10,16 +10,15 @@
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-  <script src="http://code.jquery.com/jquery.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js"
     integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk"
     crossorigin="anonymous"></script>
 
-  <!-- Near -->
-  <script src="https://cdn.jsdelivr.net/gh/nearprotocol/near-api-js/dist/near-api-js.js"></script>
+  <!-- JQUERY -->
+  <script src="http://code.jquery.com/jquery.js"></script>
 
   <!-- Main JS -->
-  <script type="module" src="./js/index.js"></script>
+  <script type="module" src="index.js"></script>
 
   <!-- Style -->
   <link rel="stylesheet" href="assets/global.css">
@@ -31,11 +30,10 @@
     <h1> Backend Sign-in Example </h1>
 
     <div class="row">
-      <div class="col-5">
-
+      <div class="col-6">
         <h4> Signing the Message </h4>
         <p>
-          We ask the wallet to sign a message (see <i class="message">./public/js/index.js</i>).
+          We ask the wallet to sign a message (<code>index.js</code>).
           If the user accepts, the wallet returns the signed message alongside:
         <ul>
           <li>The account used to sign</li>
@@ -44,12 +42,12 @@
           <li>The block-id in which the message was signed</li>
         </ul>
         </p>
-
       </div>
-      <div class="col-5">
+
+      <div class="col-6">
         <h4> Authenticating the User </h4>
         <p>
-          The signed message is sent to our express backend (see <i class="messages">./routes/user.js</i>), which then
+          The signed message is sent to our express backend (<code>./server/routes/user.js</code>), which then
           verifies that:
         </p>
 
@@ -58,28 +56,22 @@
           <li>The public key belongs to the account</li>
           <li>The message was signed recently</li>
         </ol>
-
       </div>
-
     </div>
 
     <hr />
 
-    <p class="text-center">
-      {% if not user %}
-
-      <!-- The server will serve this if the user is **NOT** authenticated -->
-      You are not logged in. The backend won't allow you to access the <a href="/secret">secret page</a> until you
-      <button class="btn btn-primary" id="login-btn"> Login using NEAR </button>
-      
-      {% else %}
-
-      <!-- The server will serve this if the user **IS** authenticated -->
-      Hi <b>{{user}}</b>, you can now check <a href="/secret"> the secret </a> -
-      <button class="btn btn-primary" id="logout-btn"> Logout </button>
-
-      {% endif %}
-    </p>
+    <div class="text-center">
+      <div>
+        <b>Backend</b> says: <span id="message"> Loading... </span>
+      </div>
+      <div class="mt-2">
+        <button class="btn btn-primary" id="login-btn">Login in to NEAR</button>
+        <button class="btn btn-primary" id="sign-btn">Sign Message to login in backend</button>
+        <button class="btn btn-primary" id="logout-btn">Logout from NEAR & backend</button>
+      </div>
+    </div>
   </div>
 </body>
+
 </html>

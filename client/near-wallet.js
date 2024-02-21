@@ -1,17 +1,11 @@
 /* A helper file that simplifies using the wallet selector */
 
-// near api js
-import { providers } from 'near-api-js';
-
 // wallet selector UI
 import '@near-wallet-selector/modal-ui/styles.css';
 import { setupModal } from '@near-wallet-selector/modal-ui';
-import LedgerIconUrl from '@near-wallet-selector/ledger/assets/ledger-icon.png';
-import MyNearIconUrl from '@near-wallet-selector/my-near-wallet/assets/my-near-wallet-icon.png';
 
 // wallet selector options
 import { setupWalletSelector } from '@near-wallet-selector/core';
-import { setupLedger } from '@near-wallet-selector/ledger';
 import { setupMyNearWallet } from '@near-wallet-selector/my-near-wallet';
 
 // Wallet that simplifies using the wallet selector
@@ -34,9 +28,17 @@ export class Wallet {
   async startUp() {
     this.walletSelector = await setupWalletSelector({
       network: this.network,
-      modules: [setupMyNearWallet({ iconUrl: MyNearIconUrl }),
-      setupLedger({ iconUrl: LedgerIconUrl })],
+      modules: [setupMyNearWallet()],
     });
+
+    const isSignedIn = this.walletSelector.isSignedIn();
+
+    if (isSignedIn) {
+      this.wallet = await this.walletSelector.wallet();
+      this.accountId = this.walletSelector.store.getState().accounts[0].accountId;
+    }
+
+    return isSignedIn;
   }
 
   // Sign-in method
@@ -51,5 +53,14 @@ export class Wallet {
     this.wallet.signOut();
     this.wallet = this.accountId = this.createAccessKeyFor = null;
     window.location.replace(window.location.origin + window.location.pathname);
+  }
+
+  signMessage() {
+    const message = "log me in";
+    const recipient = "http://localhost:3000";
+    const challenge = Buffer.from(Array.from(Array(32).keys()))
+    const callbackUrl = "http://localhost:1234"
+
+    this.wallet.signMessage({ message, recipient, nonce: challenge, callbackUrl})
   }
 }

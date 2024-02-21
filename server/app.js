@@ -1,46 +1,51 @@
 const express = require('express');
-const path = require('path');
 const bodyParser = require('body-parser');
-const session = require('express-session');
-const flash = require('connect-flash');
+const cors = require("cors");
+const passport = require('passport');
+const passportJWT = require('passport-jwt');
 
 // Authentication
-const walletAuthenticate = require('./authenticate/passport-strategy')
-const passport = require('passport');
-
-// Handling website
-const nunjucks = require('nunjucks')  // View Engine
-const web_routes = require('./routes/index');  // Handle base page
-const user_routes = require('./routes/user');  // Handle register/login
+const near = require('./authenticate/passport-strategy')
 
 // Create app
 var app = express();
-
-// view engine setup
-nunjucks.configure('../dist', { autoescape: true, express: app, watch: true });
-app.set('view engine', 'html');
-app.use(express.static('../dist/public'));
 
 // app config
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Session + auth
-app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
-app.use(passport.initialize());
-app.use(passport.session());
+// CORS - Trust me, you do NOT want to use '*' in production
+const corsOptions = {
+  origin: '*',
+  credentials: true,
+  optionSuccessStatus: 200,
+}
+
+app.use(cors(corsOptions))
 
 // Configure passport to use the passport_local_near functions
-passport.use('near', new walletAuthenticate.Strategy())
-passport.serializeUser(walletAuthenticate.serializeUser())
-passport.deserializeUser(walletAuthenticate.deserializeUser())
+passport.use('near', new near.Strategy())
+passport.serializeUser(near.serializeUser)
+passport.deserializeUser(near.deserializeUser)
 
-// to pass messages across routes
-app.use(flash());
+passport.use('jwt',
+  new passportJWT.Strategy(
+    {
+      jwtFromRequest: passportJWT.ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: 'a-fixed-secret-is-not-secure',
+    },
+    (payload, callback) => {
+      if (payload && payload.expires > Date.now()) return callback(null, payload.accountId);
+      return callback(null, false);
+    })
+);
+
+// Auth
+app.use(passport.initialize());
 
 // handle routes in another file
-app.use('/user/', user_routes);
-app.use('/', web_routes);
+const index_routes = require('./routes.js');
+app.use('/', index_routes);
 
 // catch 404 and forward to error handler
 function error404(req, res, next) {
@@ -52,13 +57,13 @@ function error404(req, res, next) {
 function error_handler(err, req, res, next) {
   res.status(err.status || 500);
 
-  error = {}; // By default, we do not leak info to users
+  let error = {}; // By default, we do not leak info to users
 
   if (app.get('env') === 'development') {
     error = err; // In development we see the stack
   }
 
-  res.render('error', { message: err.message, error: error });
+  res.json({ message: err.message, error: error });
 }
 
 app.use(error404);

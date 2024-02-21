@@ -1,7 +1,7 @@
-import { KeyPair } from "near-api-js";
+import { KeyPair } from 'near-api-js';
 import * as Borsh from '@dao-xyz/borsh';
 import { field, option, fixedArray } from '@dao-xyz/borsh';
-const js_sha256 = require("js-sha256")
+import * as js_sha256 from 'js-sha256';
 
 type AccessKey = 'full-access' | 'function-call'
 
